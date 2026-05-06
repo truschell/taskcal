@@ -320,8 +320,7 @@
                                    html += '<div class="slot" ondragover="onSlotDragOver(event)" ondragleave="onSlotDragLeave(event)" ondrop="onSlotDrop(event, \'' + slotKey + '\')" data-slot="' + slotKey + '">';
                                    const tasksInSlot = tasks.filter(t => t.sched && new Date(t.sched).toISOString().slice(0, 13) === slotKey.slice(0, 13));
                                    tasksInSlot.forEach(t => {
-                                                html += '<' + 't.id+\'\'>' + '<div class="event ' + t.status + '" draggable="true" ondragstart="onDragStart(event, \'' + t.id + '\')" ondragend="onDragEnd(event)" id="event-' + t.id + '">';
-                                                html += '<div class="event-title">' + t.title + '</div>';
+            html += '<div class="event ' + t.status + '" draggable="true" ondragstart="onDragStart(event, \'' + t.id + '\')" ondragend="onDragEnd(event)" id="event-' + t.id + '">';                                                html += '<div class="event-title">' + t.title + '</div>';
                                                 if (t.desc) html += '<div class="event-sub">' + t.desc + '</div>';
                                                 html += '<button class="event-status" onclick="cycleStatus(\'' + t.id + '\')" style="display:inline-block;">' + (t.status === 'COMPLETE' ? '✓' : (t.status === 'IN_PROGRESS' ? '→' : '○')) + ' ' + t.status.replace('_', ' ') + '</button>';
                                                 html += '</div>';
