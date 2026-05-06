@@ -1,545 +1,441 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TaskCal</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: sans-serif; background: #f5f5f5; color: #1a1a1a; font-size: 14px; user-select: none; }
+ <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TaskCal</title>
+   <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: sans-serif; background: #f5f5f5; color: #1a1a1a; font-size: 14px; user-select: none; }
 
-  .nav { background: white; border-bottom: 1px solid #e0e0e0; padding: 10px 16px; display: flex; align-items: center; gap: 8px; }
-  .brand { font-weight: 700; font-size: 15px; margin-right: 12px; }
-  .nav button { padding: 5px 14px; border-radius: 6px; border: none; background: transparent; cursor: pointer; font-size: 13px; color: #555; }
-  .nav button.active { background: #e8f0fe; color: #2d5be3; font-weight: 600; }
+        .nav { background: white; border-bottom: 1px solid #e0e0e0; padding: 10px 16px; display: flex; align-items: center; }
+        .brand { font-weight: 700; font-size: 15px; margin-right: 12px; }
+        .nav button { padding: 5px 14px; border-radius: 6px; border: none; background: transparent; cursor: pointer; font-size: 13px; }
+        .nav button.active { background: #e8f0fe; color: #2d5be3; font-weight: 600; }
 
-  .layout { display: flex; height: calc(100vh - 45px); }
+        .layout { display: flex; height: calc(100vh - 45px); }
 
-  /* ── Sidebar ── */
-  .sidebar { width: 280px; background: white; border-right: 1px solid #e0e0e0; display: flex; flex-direction: column; flex-shrink: 0; }
+        .sidebar { width: 280px; background: white; border-right: 1px solid #e0e0e0; padding: 10px 16px; display: flex; flex-direction: column; gap: 6px; overflow-y: auto; }
 
-  .ai-box { margin: 12px; padding: 12px; background: #f3eefb; border-radius: 10px; border: 1px solid #d4c5f0; }
-  .ai-box label { font-size: 11px; font-weight: 700; color: #6b3fa0; display: block; margin-bottom: 6px; }
-  .ai-box textarea { width: 100%; border: 1px solid #d4c5f0; border-radius: 6px; padding: 7px; font-size: 12px; resize: none; background: white; font-family: inherit; }
-  .ai-box button { margin-top: 6px; width: 100%; padding: 7px; background: #6b3fa0; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600; }
-  .ai-msg { font-size: 11px; color: #6b3fa0; margin-top: 5px; text-align: center; min-height: 16px; }
+        .ai-box { margin: 12px 12px; padding: 12px 12px; background: #f3eefb; border-radius: 10px; border: 1px solid #d4c5f0; }
+        .ai-box label { font-size: 11px; font-weight: 700; color: #6b3fa0; display: block; margin-bottom: 6px; }
+        .ai-box input { padding: 5px 8px; width: 100%; border: none; border-radius: 8px; font-size: 11px; }
+        .ai-box button { width: 100%; padding: 8px; border: none; background: #6b3fa0; color: white; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 600; margin-top: 8px; }
+        .ai-box button:hover { background: #5a3189; }
 
-  /* Drop zone header for unscheduled */
-  .unscheduled-zone {
-    border-top: 1px solid #e0e0e0;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transition: background 0.15s;
-  }
-  .unscheduled-zone.drag-over-zone {
-    background: #fffbe6;
-  }
-  .list-header {
-    padding: 10px 14px 6px;
-    font-size: 11px; font-weight: 700; color: #999;
-    text-transform: uppercase; letter-spacing: 0.05em;
-    display: flex; align-items: center; justify-content: space-between;
-  }
-  .list-header-hint {
-    font-size: 10px; font-weight: 400; color: #bbb; text-transform: none; letter-spacing: 0;
-  }
-  .task-list { flex: 1; overflow-y: auto; padding: 6px 10px; display: flex; flex-direction: column; gap: 6px; }
-  .add-btn { margin: 8px 10px; padding: 8px; border: 2px dashed #ccc; background: transparent; border-radius: 8px; cursor: pointer; font-size: 12px; color: #888; width: calc(100% - 20px); font-family: inherit; }
-  .add-btn:hover { border-color: #2d5be3; color: #2d5be3; }
+        .list-header { padding: 10px 14px 6px; font-size: 11px; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; justify-content: space-between; }
+        .list-header-hint { font-size: 10px; font-weight: 400; color: #bbb; text-transform: none; letter-spacing: 0; }
 
-  /* ── Task Card ── */
-  .task-card {
-    background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px;
-    padding: 9px 11px; cursor: grab; position: relative;
-    transition: border-color 0.15s, box-shadow 0.15s, opacity 0.15s;
-  }
-  .task-card:hover { border-color: #bbb; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
-  .task-card.is-dragging { opacity: 0.35; cursor: grabbing; }
+        .task-list { flex: 1; overflow-y: auto; padding: 6px 10px; display: flex; flex-direction: column; gap: 6px; }
+        .add-btn { margin: 8px 10px; padding: 8px; border: 2px dashed #ccc; background: transparent; border-radius: 8px; cursor: pointer; font-size: 11px; }
+        .add-btn:hover { border-color: #2d5be3; color: #2d5be3; }
 
-  .card-top { display: flex; align-items: flex-start; gap: 8px; }
-  .task-info { flex: 1; min-width: 0; }
-  .task-name { font-size: 13px; line-height: 1.3; margin-bottom: 5px; }
-  .task-name.struck { text-decoration: line-through; color: #aaa; }
+        .task-card { background: #fafafa; border: 1px solid #e0e0e0; border-radius: 8px; padding: 9px 11px; cursor: grab; position: relative; transition: border-color 0.15s, box-shadow 0.15s, opacity 0.15s; }
+        .task-card:hover { border-color: #bbb; box-shadow: 0 2px 6px rgba(0,0,0,0.07); }
+        .task-card.is-dragging { opacity: 0.35; cursor: grabbing; }
 
-  /* Status pill — clickable cycle */
-  .status-pill {
-    display: inline-flex; align-items: center; gap: 4px;
-    font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 20px;
-    cursor: pointer; border: none; font-family: inherit;
-    transition: filter 0.1s;
-  }
-  .status-pill:hover { filter: brightness(0.93); }
-  .status-pill.TODO      { background: #e8f0fe; color: #2d5be3; }
-  .status-pill.IN_PROGRESS { background: #fdf4e7; color: #9a5c00; }
-  .status-pill.COMPLETE  { background: #eaf5f0; color: #1a7a4a; }
-  .status-arrow { font-size: 9px; opacity: 0.6; }
+        .card-top { display: flex; align-items: flex-start; gap: 8px; }
+        .task-info { flex: 1; min-width: 0; }
+        .task-name { font-size: 13px; line-height: 1.3; margin-bottom: 5px; }
+        .task-name.struck { text-decoration: line-through; color: #aaa; }
+        .status-pill { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 700; padding: 3px 5px; border-radius: 20px; cursor: pointer; border: none; font-family: inherit; }
+        .status-pill { background: rgba(255,255,255,0.55); color: inherit; border: none; }
+        .status-pill { background: #e8f0fe; border-color: #2d5be3; color: #2d5be3; }
+        .event.IN_PROGRESS .status-pill { background: #fdf4e7; border-color: #d4800a; color: #9a5c00; }
+        .event.COMPLETE .status-pill { background: #eaf5f0; border-color: #1a7a4a; color: #1a7a4a; opacity: 0.75; }
+        .event-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 4px; }
+        .event-sub { font-size: 10px; opacity: 0.75; margin-top: 1px; }
 
-  .tag-time { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: #f0f0f0; color: #555; font-weight: 600; }
+        /* status pill inside event */
+        .event-status { display: inline-block; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 10px; margin-top: 3px; cursor: pointer; border: none; font-family: inherit; background: rgba(255,255,255,0.55); color: inherit; transition: filter 0.1s, box-shadow 0.1s; }
+        .event-status:hover { filter: brightness(0.95); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+        .event.TODO .event-status { background: #e8f0fe; border-color: #2d5be3; color: #2d5be3; }
+        .event.IN_PROGRESS .event-status { background: #fdf4e7; border-color: #d4800a; color: #9a5c00; }
+        .event.COMPLETE .event-status { background: #eaf5f0; border-color: #1a7a4a; color: #1a7a4a; }
+        .event-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 4px; }
+        .event-sub { font-size: 10px; opacity: 0.75; margin-top: 1px; }
 
-  .card-meta { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+        /* status pill inside event */
+        .event-status { display: inline-block; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 10px; margin-top: 3px; cursor: pointer; border: none; font-family: inherit; background: rgba(255,255,255,0.55); color: inherit; transition: filter 0.1s, box-shadow 0.1s; }
+        .event-status:hover { filter: brightness(0.95); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+        .event.TODO .event-status { background: #e8f0fe; border-color: #2d5be3; color: #2d5be3; }
+        .event.IN_PROGRESS .event-status { background: #fdf4e7; border-color: #d4800a; color: #9a5c00; }
+        .event.COMPLETE .event-status { background: #eaf5f0; border-color: #1a7a4a; color: #1a7a4a; }
 
-  .task-btns { display: flex; gap: 4px; flex-shrink: 0; }
-  .task-btns button { border: none; background: #f0f0f0; cursor: pointer; padding: 5px 8px; border-radius: 5px; color: #666; font-size: 12px; line-height: 1; }
-  .task-btns button:hover { background: #e0e0e0; color: #111; }
-  .del-btn:hover { background: #fee2e2 !important; color: #c0392b !important; }
+        .day-col.today .dd { color: #2d5be3; }
+        .day-slots { position: relative; }
+        .slot { height: 48px; border-bottom: 1px solid #f0f0f0; transition: background 0.1s; }
+        .slot:hover { background: #f6f5ff !important; outline: 2px dashed #2d5be3; outline-offset: -2px; }
+        .slot.over { background: #d0e2ff !important; outline: 2px dashed #2d5be3; outline-offset: -2px; }
 
-  .del-bar { display: none; position: absolute; inset: 0; background: #fff5f5; border: 1.5px solid #fca5a5; border-radius: 8px; align-items: center; justify-content: space-between; padding: 0 12px; z-index: 10; }
-  .del-bar.visible { display: flex; }
-  .del-bar span { font-size: 12px; color: #c0392b; font-weight: 500; }
-  .del-bar-btns { display: flex; gap: 6px; }
-  .del-bar-btns button { padding: 4px 12px; border-radius: 5px; border: none; cursor: pointer; font-size: 12px; font-weight: 600; font-family: inherit; }
-  .del-no { background: #f0f0f0; color: #333; }
-  .del-yes { background: #c0392b; color: white; }
+        .event { position: absolute; left: 3px; right: 3px; border-radius: 6px; padding: 5px 8px; font-size: 11px; border-left: 3px solid; box-shadow: 0 1px 3px rgba(0,0,0,0.08); cursor: grab; overflow: hidden; transition: filter 0.1s, box-shadow 0.1s; }
+        .event:hover { filter: brightness(0.95); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+        .event.is-dragging { opacity: 0.35; cursor: grabbing; }
+        .event.TODO { background: #e8f0fe; border-color: #2d5be3; color: #2d5be3; }
+        .event.IN_PROGRESS { background: #fdf4e7; border-color: #d4800a; color: #9a5c00; }
+        .event.COMPLETE { background: #eaf5f0; border-color: #1a7a4a; color: #1a7a4a; opacity: 0.75; }
+        .event-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 4px; }
+        .event-sub { font-size: 10px; opacity: 0.75; margin-top: 1px; }
 
-  /* ── Calendar ── */
-  .calendar { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-  .cal-top { background: white; border-bottom: 1px solid #e0e0e0; padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; }
-  .cal-top span { font-size: 13px; font-weight: 600; }
-  .cal-top button { padding: 4px 10px; border: 1px solid #ccc; border-radius: 6px; background: white; cursor: pointer; font-size: 12px; font-family: inherit; }
-  .cal-body { flex: 1; display: flex; overflow: hidden; }
-  .time-gutter { width: 48px; background: white; border-right: 1px solid #e0e0e0; padding-top: 36px; overflow: hidden; flex-shrink: 0; }
-  .time-gutter div { height: 48px; font-size: 10px; color: #aaa; text-align: right; padding-right: 6px; padding-top: 2px; }
-  .days-wrap { flex: 1; display: flex; overflow-y: auto; overflow-x: hidden; }
-  .day-col { flex: 1; border-right: 1px solid #e0e0e0; display: flex; flex-direction: column; min-width: 0; }
-  .day-col:last-child { border-right: none; }
-  .day-head { height: 36px; background: white; border-bottom: 1px solid #e0e0e0; display: flex; flex-direction: column; align-items: center; justify-content: center; position: sticky; top: 0; z-index: 2; }
-  .day-head .dn { font-size: 10px; color: #aaa; text-transform: uppercase; }
-  .day-head .dd { font-size: 14px; font-weight: 600; }
-  .day-col.today .day-head { background: #e8f0fe; }
-  .day-col.today .dd { color: #2d5be3; }
-  .day-slots { position: relative; }
-  .slot { height: 48px; border-bottom: 1px solid #f0f0f0; transition: background 0.1s; }
-  .slot:hover { background: #f0f5ff; }
-  .slot.over { background: #d0e2ff !important; outline: 2px dashed #2d5be3; outline-offset: -2px; }
+        /* status pill inside event */
+        .event-status { display: inline-block; font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 10px; margin-top: 3px; cursor: pointer; border: none; font-family: inherit; background: rgba(255,255,255,0.55); color: inherit; transition: filter 0.1s, box-shadow 0.1s; }
+        .event-status:hover { filter: brightness(0.95); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+        .event.TODO .event-status { background: #e8f0fe; border-color: #2d5be3; color: #2d5be3; }
+        .event.IN_PROGRESS .event-status { background: #fdf4e7; border-color: #d4800a; color: #9a5c00; }
+        .event.COMPLETE .event-status { background: #eaf5f0; border-color: #1a7a4a; color: #1a7a4a; }
 
-  .event {
-    position: absolute; left: 3px; right: 3px; border-radius: 6px;
-    padding: 5px 8px; font-size: 11px; border-left: 3px solid;
-    cursor: grab; overflow: hidden; transition: filter 0.1s, box-shadow 0.1s;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
-  }
-  .event:hover { filter: brightness(0.95); box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
-  .event.is-dragging { opacity: 0.35; }
-  .event.TODO       { background: #e8f0fe; border-color: #2d5be3; color: #2d5be3; }
-  .event.IN_PROGRESS { background: #fdf4e7; border-color: #d4800a; color: #9a5c00; }
-  .event.COMPLETE   { background: #eaf5f0; border-color: #1a7a4a; color: #1a7a4a; opacity: 0.75; }
-  .event-title { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 4px; }
-  .event-sub { font-size: 10px; opacity: 0.75; margin-top: 1px; }
+        .cal { flex: 1; overflow: auto; }
+        .cal-header { position: sticky; top: 0; background: white; }
+        .week-nav { display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid #e0e0e0; }
+        .week-nav button { padding: 5px 14px; border: none; background: transparent; cursor: pointer; border-radius: 6px; }
+        .week-nav button:hover { background: #e8e8e8; }
+        .day-cols { display: flex; }
+        .day-col { flex: 1; border-right: 1px solid #e0e0e0; }
+        .day-col:last-child { border-right: none; }
+        .day-col-header { text-align: center; padding: 10px 0; border-bottom: 1px solid #e0e0e0; }
+        .day-col-header .dn { font-size: 11px; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.05em; }
+        .day-col-header .dd { font-size: 17px; font-weight: 600; color: #000; }
+        .day-col.today .dd { color: #2d5be3; }
 
-  /* status pill inside event */
-  .event-status {
-    display: inline-block; font-size: 9px; font-weight: 700;
-    padding: 2px 6px; border-radius: 10px; margin-top: 3px;
-    cursor: pointer; border: none; font-family: inherit;
-    background: rgba(255,255,255,0.55);
-    color: inherit;
-  }
-  .event-status:hover { background: rgba(255,255,255,0.85); }
+        .time-column { display: flex; }
+        .time-gutter { width: 50px; background: #fafafa; border-right: 1px solid #e0e0e0; padding: 0; }
+        .time-label { height: 48px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #999; padding: 0 8px; }
+        .cal-body { display: flex; flex: 1; }
+        .day-cols { display: flex; flex: 1; }
+        .day-col { flex: 1; border-right: 1px solid #e0e0e0; position: relative; }
+        .day-col:last-child { border-right: none; }
+        .day-slots { position: relative; }
+        .slot { height: 48px; border-bottom: 1px solid #f0f0f0; transition: background 0.1s; }
+        .slot:hover { background: #f6f5ff !important; outline: 2px dashed #2d5be3; outline-offset: -2px; }
+        .slot.over { background: #d0e2ff !important; outline: 2px dashed #2d5be3; outline-offset: -2px; }
 
-  /* ── Modal ── */
-  .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 50; display: none; align-items: center; justify-content: center; }
-  .overlay.open { display: flex; }
-  .modal { background: white; border-radius: 12px; width: 360px; max-width: 95vw; box-shadow: 0 8px 32px rgba(0,0,0,0.15); }
-  .modal-head { padding: 14px 18px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
-  .modal-head h2 { font-size: 14px; font-weight: 700; }
-  .modal-head button { border: none; background: none; font-size: 20px; cursor: pointer; color: #aaa; line-height: 1; }
-  .modal-body { padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
-  .field { display: flex; flex-direction: column; gap: 4px; }
-  .field label { font-size: 11px; font-weight: 700; color: #666; }
-  .field input, .field textarea, .field select { border: 1px solid #ddd; border-radius: 6px; padding: 8px 10px; font-size: 13px; font-family: inherit; background: #fafafa; outline: none; width: 100%; }
-  .field input:focus, .field textarea:focus { border-color: #2d5be3; background: white; }
-  .field textarea { resize: none; }
-  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .modal-foot { padding: 12px 18px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 8px; }
-  .modal-foot button { padding: 7px 16px; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; font-family: inherit; }
-  .btn-cancel { background: #f0f0f0; color: #555; }
-  .btn-save { background: #2d5be3; color: white; }
+        .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 50; display: none; align-items: center; }
+        .modal.open { display: flex; }
+        .modal-content { background: white; border-radius: 12px; width: 360px; max-width: 95vw; box-shadow: 0 8px 32px rgba(0,0,0,0.08); }
+        .modal-head { padding: 14px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .modal-head h2 { font-size: 12px; font-weight: 700; }
+        .modal-head button { border: none; background: none; cursor: pointer; font-size: 20px; line-height: 1; }
+        .modal-body { padding: 14px 16px; }
+        .field { margin-bottom: 14px; }
+        .field label { display: block; font-size: 11px; font-weight: 700; margin-bottom: 6px; }
+        .field input, .field textarea, .field select { width: 100%; padding: 6px 8px; border: 1px solid #e0e0e0; border-radius: 6px; font-family: inherit; font-size: 11px; }
+        .field textarea { resize: vertical; min-height: 60px; }
+        .field-row { display: flex; gap: 12px; }
+        .field-row > .field { flex: 1; }
+        .modal-foot { padding: 14px 16px; display: flex; gap: 8px; justify-content: flex-end; border-top: 1px solid #eee; }
+        .modal-foot button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; }
+        .btn-cancel { background: transparent; color: #666; }
+        .btn-save { background: #6b3fa0; color: white; }
+        .btn-save:hover { background: #5a3189; }
 
-  .empty { text-align: center; color: #aaa; font-size: 12px; padding: 16px; border: 2px dashed #e0e0e0; border-radius: 8px; }
+        .del-bar { margin-bottom: 12px; padding: 12px; border: 1px solid #d4c5f0; border-radius: 8px; background: transparent; }
+        .del-bar-btns { display: flex; gap: 8px; }
+        .del-no { padding: 6px 12px; border: none; background: transparent; border-radius: 6px; cursor: pointer; color: #666; font-size: 11px; font-weight: 600; }
+        .del-yes { padding: 6px 12px; border: none; background: #d32f2f; color: white; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 600; }
+        .del-yes:hover { background: #b71c1c; }
+      </style>
+ </head>
+ <body>
+    <div class="nav">
+         <div class="brand">◆ TaskCal</div>div>
+         <button class="nav-btn" onclick="setView('today')">Today</button>button>
+         <button class="nav-btn" onclick="setView('allTasks')">All Tasks</button>button>
+         <button class="nav-btn" onclick="setView('calendar')">Calendar</button>button>
+    </div>div>
 
-  /* Drag ghost */
-  #drag-ghost {
-    position: fixed; pointer-events: none; z-index: 9999;
-    background: white; border: 1.5px solid #2d5be3; border-radius: 8px;
-    padding: 7px 12px; font-size: 12px; font-weight: 600; color: #2d5be3;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-    white-space: nowrap; display: none;
-  }
-</style>
-</head>
-<body>
+    <div class="layout">
+         <div class="sidebar">
+                <div class="ai-box">
+                         <label>+ AI Scheduler</label>
+                        <input type="text" id="aiInput" placeholder="e.g. Do quick tasks first...">
+                        <button onclick="scheduleMyDay()">Schedule my day</button>button>
+                </div>div>
+         
+               <div class="list-header">UNSCHEDULED <span class="list-header-hint">drop here to unschedule</span>span></div>div>
+               <div class="task-list" id="unscheduledList"></div>div>
+         
+               <button class="add-btn" onclick="openModal()">+ New task</button>button>
+         </div>div>
+    
+        <!-- Modal -->
+        <div class="modal" id="overlay" onclick="if(event.target===this)closeModal()">
+              <div class="modal-content">
+                      <div class="modal-head">
+                                <h2 id="modalTitle">New Task</h2>h2>
+                                <button onclick="closeModal()">×</button>button>
+                      </div>div>
+                      <div class="modal-body">
+                                <div class="field"><label>Title *</label><input id="fTitle" placeholder="What needs to be done?" /></div>div>
+                                <div class="field"><label>Description</label><textarea id="fDesc" rows="2" placeholder="Optional notes..."></textarea></div>div>
+                                <div class="field-row">
+                                            <div class="field"><label>Duration (min)</label><input id="fDur" type="number" value="30" min="5" step="5" /></div>div>
+                                            <div class="field"><label>Status</label>
+                                                          <select id="fStatus">
+                                                                          <option value="TODO">To Do</option>option>
+                                                                          <option value="IN_PROGRESS">In Progress</option>option>
+                                                                          <option value="COMPLETE">Complete</option>option>
+                                                          </select>select>
+                                            </div>div>
+                                </div>div>
+                                <div class="field"><label>Schedule (optional)</label><input id="fSched" type="datetime-local" /></div>div>
+                      </div>div>
+                      <div class="modal-foot">
+                                <button class="btn-cancel" onclick="closeModal()">Cancel</button>button>
+                                <button class="btn-save" onclick="saveTask()">Save</button>button>
+                      </div>div>
+              </div>div>
+        </div>div>
+    
+        <!-- Calendar -->
+        <div class="cal">
+              <div class="cal-header">
+                      <div class="week-nav">
+                                <button onclick="prevWeek()">← Prev</button>button>
+                                <span id="weekTitle">May 4 – May 10</span>span>
+                                <button onclick="nextWeek()">Next →</button>button>
+                      </div>div>
+                      <div class="day-cols">
+                                <div class="time-gutter"></div>div>
+                                <div class="day-col" id="dayTemplate" style="display:none;"></div>div>
+                                <div id="dayColsContainer"></div>div>
+                      </div>div>
+              </div>div>
+              <div class="cal-body">
+                      <div class="time-gutter">
+                                <div class="time-label">7am</div>div>
+                                <div class="time-label">8am</div>div>
+                                <div class="time-label">9am</div>div>
+                                <div class="time-label">10am</div>div>
+                                <div class="time-label">11am</div>div>
+                                <div class="time-label">12pm</div>div>
+                                <div class="time-label">1pm</div>div>
+                                <div class="time-label">2pm</div>div>
+                                <div class="time-label">3pm</div>div>
+                                <div class="time-label">4pm</div>div>
+                                <div class="time-label">5pm</div>div>
+                                <div class="time-label">6pm</div>div>
+                                <div class="time-label">7pm</div>div>
+                                <div class="time-label">8pm</div>div>
+                      </div>div>
+                      <div class="day-cols" id="daysWrap"></div>div>
+              </div>div>
+        </div>div>
+    </div>div>
+ 
+   <script>
+        // ===== localStorage Functions =====
+        function saveTasks() {
+               localStorage.setItem('taskcal_tasks', JSON.stringify(tasks));
+        }
 
-<div id="drag-ghost"></div>
+        function loadTasks() {
+               const stored = localStorage.getItem('taskcal_tasks');
+               if (stored) {
+                        tasks = JSON.parse(stored);
+               }
+        }
 
-<nav class="nav">
-  <span class="brand">◆ TaskCal</span>
-  <button class="active" onclick="setView('today',this)">Today</button>
-  <button onclick="setView('tasks',this)">All Tasks</button>
-  <button onclick="setView('calendar',this)">Calendar</button>
-</nav>
+        // ===== Core State =====
+        let tasks = [];
+        let weekStart = new Date(2026, 4, 4); // May 4, 2026
+        let view = 'calendar';
+        let editId = null;
 
-<div class="layout">
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <div class="ai-box">
-      <label>✦ AI Scheduler</label>
-      <textarea id="aiPrompt" rows="2" placeholder="e.g. Do quick tasks first..."></textarea>
-      <button onclick="runAI()">Schedule my day</button>
-      <div class="ai-msg" id="aiMsg"></div>
-    </div>
+        // ===== Utilities =====
+        function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
+        function fmtDate(d) { return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }
+        function fmtTime(d) { return d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true}).toLowerCase(); }
+        function getTask(id) { return tasks.find(t => t.id === id) || null; }
+        function delTask(id) { tasks = tasks.filter(t => t.id !== id); saveTasks(); render(); }
 
-    <!-- Unscheduled drop zone -->
-    <div class="unscheduled-zone" id="unscheduledZone"
-      ondragover="onZoneDragOver(event)"
-      ondragleave="onZoneDragLeave(event)"
-      ondrop="onZoneDrop(event)">
-      <div class="list-header">
-        <span id="listHeader">Unscheduled</span>
-        <span class="list-header-hint" id="zoneHint">drop here to unschedule</span>
-      </div>
-      <div class="task-list" id="taskList"></div>
-      <button class="add-btn" onclick="openModal(null)">+ New task</button>
-    </div>
-  </div>
+        // ===== Views =====
+        function setView(v) { view = v; document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); render(); }
 
-  <!-- Calendar -->
-  <div class="calendar">
-    <div class="cal-top">
-      <button onclick="prevWeek()">← Prev</button>
-      <span id="calTitle"></span>
-      <button onclick="nextWeek()">Next →</button>
-    </div>
-    <div class="cal-body">
-      <div class="time-gutter" id="timeGutter"></div>
-      <div class="days-wrap" id="daysWrap"></div>
-    </div>
-  </div>
-</div>
+        // ===== Modal =====
+        function openModal(id) {
+               editId = id;
+               const t = id ? getTask(id) : null;
+               document.getElementById('modalTitle').textContent = t ? 'Edit Task' : 'New Task';
+               document.getElementById('fTitle').value = t?.title || '';
+               document.getElementById('fDesc').value = t?.desc || '';
+               document.getElementById('fDur').value = t?.dur || 30;
+               document.getElementById('fStatus').value = t?.status || 'TODO';
+               if (t?.sched) {
+                        const d = new Date(t.sched);
+                        document.getElementById('fSched').value = d.toISOString().slice(0, 16);
+               } else document.getElementById('fSched').value = '';
+               document.getElementById('overlay').classList.add('open');
+               setTimeout(() => document.getElementById('fTitle').focus(), 50);
+        }
 
-<!-- Modal -->
-<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
-  <div class="modal">
-    <div class="modal-head">
-      <h2 id="modalTitle">New Task</h2>
-      <button onclick="closeModal()">×</button>
-    </div>
-    <div class="modal-body">
-      <div class="field"><label>Title *</label><input id="fTitle" placeholder="What needs to be done?" /></div>
-      <div class="field"><label>Description</label><textarea id="fDesc" rows="2" placeholder="Optional notes..."></textarea></div>
-      <div class="field-row">
-        <div class="field"><label>Duration (min)</label><input id="fDur" type="number" value="30" min="5" step="5" /></div>
-        <div class="field"><label>Status</label>
-          <select id="fStatus">
-            <option value="TODO">To Do</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="COMPLETE">Complete</option>
-          </select>
-        </div>
-      </div>
-      <div class="field"><label>Schedule (optional)</label><input id="fSched" type="datetime-local" /></div>
-    </div>
-    <div class="modal-foot">
-      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-save" onclick="saveTask()">Save</button>
-    </div>
-  </div>
-</div>
+        function closeModal() {
+               document.getElementById('overlay').classList.remove('open');
+               editId = null;
+        }
 
-<script>
-// ── Data ──────────────────────────────────────────────────────────────────────
-function todayAt(h,m){ var d=new Date(); d.setHours(h,m,0,0); return d; }
-function uid(){ return 'id'+Math.random().toString(36).slice(2,8); }
+        function saveTask() {
+               const title = document.getElementById('fTitle').value.trim();
+               if (!title) { alert('Title is required'); return; }
+               const desc = document.getElementById('fDesc').value.trim();
+               const dur = parseInt(document.getElementById('fDur').value);
+               const status = document.getElementById('fStatus').value;
+               const schedStr = document.getElementById('fSched').value;
+               const sched = schedStr ? new Date(schedStr) : null;
 
-var tasks = [];
+               if (editId) {
+                        const t = getTask(editId);
+                        if (t) { t.title = title; t.desc = desc; t.dur = dur; t.status = status; t.sched = sched; }
+               } else {
+                        tasks.push({ id: Date.now(), title, desc, dur, status, sched });
+               }
+               saveTasks();
+               closeModal();
+               render();
+        }
 
-var weekStart = getWeekStart(new Date());
-var editId = null;
-var view = 'today';
-var HOURS = [7,8,9,10,11,12,13,14,15,16,17,18,19,20];
-var DNAMES = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-var STATUS_CYCLE = {TODO:'IN_PROGRESS', IN_PROGRESS:'COMPLETE', COMPLETE:'TODO'};
-var STATUS_LABEL = {TODO:'To Do', IN_PROGRESS:'In Progress', COMPLETE:'Complete'};
+        // ===== Calendar =====
+        function renderCal() {
+               const daysWrap = document.getElementById('daysWrap');
+               daysWrap.innerHTML = '';
 
-// ── Drag state ────────────────────────────────────────────────────────────────
-var dragId = null;       // task id being dragged
-var dragSource = null;   // 'list' or 'calendar'
+               const day1 = new Date(weekStart);
+               const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+               const today = new Date();
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
-function getWeekStart(d){ var r=new Date(d),day=r.getDay(); r.setDate(r.getDate()-(day===0?6:day-1)); r.setHours(0,0,0,0); return r; }
-function addDays(d,n){ var r=new Date(d); r.setDate(r.getDate()+n); return r; }
-function addMins(d,m){ return new Date(d.getTime()+m*60000); }
-function sameDay(a,b){ return new Date(a).toDateString()===new Date(b).toDateString(); }
-function isToday(d){ return sameDay(d,new Date()); }
-function fmt(d){ return new Date(d).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}); }
-function fmtDate(d){ return new Date(d).toLocaleDateString([],{month:'short',day:'numeric'}); }
-function getTask(id){ return tasks.find(function(x){return x.id===id;}); }
+               for (let i = 0; i < 7; i++) {
+                        const d = addDays(weekStart, i);
+                        const isToday = d.toDateString() === today.toDateString();
 
-// ── Render ────────────────────────────────────────────────────────────────────
-function render(){ renderList(); renderCal(); }
+                        let html = '<div class="day-col' + (isToday ? ' today' : '') + '">';
+                        html += '<div class="day-col-header">';
+                        html += '<div class="dn">' + dayNames[d.getDay()] + '</div>';
+                        html += '<div class="dd">' + d.getDate() + '</div>';
+                        html += '</div><div class="day-slots">';
 
-function renderList(){
-  document.getElementById('listHeader').textContent = view==='tasks'?'All Tasks':'Unscheduled';
-  var el = document.getElementById('taskList');
-  var list = view==='tasks'
-    ? tasks.slice().sort(function(a,b){return a.pos-b.pos;})
-    : tasks.filter(function(t){return !t.sched && t.status!=='COMPLETE';});
+                        for (let h = 7; h < 21; h++) {
+                                   const slotTime = new Date(d);
+                                   slotTime.setHours(h, 0, 0, 0);
+                                   const slotKey = slotTime.toISOString();
 
-  if(!list.length){ el.innerHTML='<div class="empty">No tasks here!<br>Add one below ↓</div>'; return; }
+                                   html += '<div class="slot" ondragover="onSlotDragOver(event)" ondragleave="onSlotDragLeave(event)" ondrop="onSlotDrop(event, \'' + slotKey + '\')" data-slot="' + slotKey + '">';
+                                   const tasksInSlot = tasks.filter(t => t.sched && new Date(t.sched).toISOString().slice(0, 13) === slotKey.slice(0, 13));
+                                   tasksInSlot.forEach(t => {
+                                                html += '<' + 't.id+\'\'>' + '<div class="event ' + t.status + '" draggable="true" ondragstart="onDragStart(event, \'' + t.id + '\')" ondragend="onDragEnd(event)" id="event-' + t.id + '">';
+                                                html += '<div class="event-title">' + t.title + '</div>';
+                                                if (t.desc) html += '<div class="event-sub">' + t.desc + '</div>';
+                                                html += '<button class="event-status" onclick="cycleStatus(\'' + t.id + '\')" style="display:inline-block;">' + (t.status === 'COMPLETE' ? '✓' : (t.status === 'IN_PROGRESS' ? '→' : '○')) + ' ' + t.status.replace('_', ' ') + '</button>';
+                                                html += '</div>';
+                                   });
+                                   html += '</div>';
+                        }
+                        html += '</div></div>';
+                        daysWrap.innerHTML += html;
+               }
 
-  var html='';
-  for(var i=0;i<list.length;i++){
-    var t=list[i];
-    var schedTag = t.sched?'<span class="tag-time">'+fmt(t.sched)+'</span>':'';
-    html += '<div class="task-card" id="card-'+t.id+'"'
-      +' draggable="true"'
-      +' ondragstart="onCardDragStart(event,\''+t.id+'\')"'
-      +' ondragend="onDragEnd()">'
-      +'<div class="card-top">'
-      +'<div class="task-info">'
-      +'<div class="task-name'+(t.status==='COMPLETE'?' struck':'')+'">'+t.title+'</div>'
-      +'<div class="card-meta">'
-      +'<button class="status-pill '+t.status+'" onclick="cycleStatus(\''+t.id+'\')" title="Click to change status">'
-      +STATUS_LABEL[t.status]
-      +' <span class="status-arrow">▸</span></button>'
-      +'<span class="tag-time">'+t.dur+'m</span>'
-      +schedTag
-      +'</div>'
-      +'</div>'
-      +'<div class="task-btns">'
-      +'<button onclick="openModal(\''+t.id+'\')">✎</button>'
-      +'<button class="del-btn" onclick="showDelBar(\''+t.id+'\')">✕</button>'
-      +'</div>'
-      +'</div>'
-      +'<div class="del-bar" id="delbar-'+t.id+'">'
-      +'<span>Delete "'+t.title+'"?</span>'
-      +'<div class="del-bar-btns">'
-      +'<button class="del-no" onclick="hideDelBar(\''+t.id+'\')">Cancel</button>'
-      +'<button class="del-yes" onclick="doDelete(\''+t.id+'\')">Delete</button>'
-      +'</div></div>'
-      +'</div>';
-  }
-  el.innerHTML=html;
-}
+               document.getElementById('weekTitle').textContent = fmtDate(weekStart) + ' – ' + fmtDate(addDays(weekStart, 6));
+        }
 
-function renderCal(){
-  var wEnd=addDays(weekStart,6);
-  document.getElementById('calTitle').textContent=fmtDate(weekStart)+' – '+fmtDate(wEnd);
-  document.getElementById('timeGutter').innerHTML=HOURS.map(function(h){
-    return '<div>'+(h<12?h+'am':h===12?'12pm':(h-12)+'pm')+'</div>';
-  }).join('');
+        function prevWeek() { weekStart = addDays(weekStart, -7); renderCal(); }
+        function nextWeek() { weekStart = addDays(weekStart, 7); renderCal(); }
 
-  var days=DNAMES.map(function(_,i){return addDays(weekStart,i);});
-  var html='';
-  for(var di=0;di<days.length;di++){
-    var day=days[di];
-    var slots='';
-    for(var hi=0;hi<HOURS.length;hi++){
-      var st=new Date(day); st.setHours(HOURS[hi],0,0,0);
-      slots+='<div class="slot"'
-        +' ondragover="onSlotDragOver(event)"'
-        +' ondragleave="onSlotDragLeave(event)"'
-        +' ondrop="onSlotDrop(event,\''+st.toISOString()+'\')">'
-        +'</div>';
-    }
+        // ===== Drag & Drop =====
+        function onDragStart(e, id) { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('taskId', id); e.target.classList.add('is-dragging'); }
+        function onDragEnd(e) { e.target.classList.remove('is-dragging'); document.querySelectorAll('.slot.over').forEach(s => s.classList.remove('over')); }
+        function onSlotDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; e.currentTarget.classList.add('over'); }
+        function onSlotDragLeave(e) { if (e.currentTarget === e.target) e.currentTarget.classList.remove('over'); }
+        function onSlotDrop(e, slotKey) {
+               e.preventDefault();
+               const taskId = parseInt(e.dataTransfer.getData('taskId'));
+               const t = getTask(taskId);
+               if (t) { t.sched = new Date(slotKey); saveTasks(); render(); }
+        }
 
-    var events='';
-    for(var ti=0;ti<tasks.length;ti++){
-      var t=tasks[ti];
-      if(!t.sched || !sameDay(new Date(t.sched),day)) continue;
-      var s=new Date(t.sched);
-      var top=(s.getHours()-HOURS[0]+s.getMinutes()/60)*48;
-      var ht=Math.max(t.dur/60*48,28);
-      events+='<div class="event '+t.status+'" id="event-'+t.id+'"'
-        +' style="top:'+top+'px;height:'+ht+'px"'
-        +' draggable="true"'
-        +' ondragstart="onEventDragStart(event,\''+t.id+'\')"'
-        +' ondragend="onDragEnd()">'
-        +'<div class="event-title">'+t.title+'</div>'
-        +'<div class="event-sub">'+fmt(s)+' · '+t.dur+'m</div>'
-        +'<button class="event-status" onclick="cycleStatus(\''+t.id+'\')" title="Click to change status">'
-        +STATUS_LABEL[t.status]+' ▸</button>'
-        +'</div>';
-    }
+        // ===== Task Management =====
+        function scheduleMyDay() { const v = document.getElementById('aiInput').value.trim(); if (v) { openModal(); document.getElementById('fTitle').value = v; document.getElementById('aiInput').value = ''; } }
+        function cycleStatus(id) { const t = getTask(id); if (t) { t.status = t.status === 'TODO' ? 'IN_PROGRESS' : t.status === 'IN_PROGRESS' ? 'COMPLETE' : 'TODO'; saveTasks(); render(); } }
 
-    html+='<div class="day-col'+(isToday(day)?' today':'')+'">'
-      +'<div class="day-head"><div class="dn">'+DNAMES[di]+'</div><div class="dd">'+day.getDate()+'</div></div>'
-      +'<div class="day-slots" style="position:relative">'+slots+events+'</div>'
-      +'</div>';
-  }
-  document.getElementById('daysWrap').innerHTML=html;
-}
+        // ===== Unscheduled Tasks =====
+        function renderUnscheduled() {
+               const unsch = tasks.filter(t => !t.sched);
+               const container = document.getElementById('unscheduledList');
+               container.innerHTML = '';
 
-// ── Status cycling ────────────────────────────────────────────────────────────
-function cycleStatus(id){
-  var t=getTask(id);
-  if(!t) return;
-  t.status=STATUS_CYCLE[t.status];
-  render();
-}
+               if (unsch.length === 0) {
+                        container.innerHTML = '<div style="text-align: center; color: #ccc; padding: 20px; font-size: 12px;">No tasks here!<br>Add one below ↓</div>';
+                        return;
+               }
 
-// ── Drag — from task list ─────────────────────────────────────────────────────
-function onCardDragStart(e,id){
-  dragId=id; dragSource='list';
-  e.dataTransfer.effectAllowed='move';
-  showGhost(e, getTask(id).title);
-  setTimeout(function(){
-    var c=document.getElementById('card-'+id);
-    if(c) c.classList.add('is-dragging');
-  },0);
-}
+               unsch.forEach(t => {
+                        let html = '<div class="task-card" draggable="true" ondragstart="onDragStart(event, ' + t.id + ')" ondragend="onDragEnd(event)" id="task-' + t.id + '">';
+                        html += '<div class="card-top">';
+                        html += '<div class="task-info">';
+                        html += '<div class="task-name' + (t.status === 'COMPLETE' ? ' struck' : '') + '">' + t.title + '</div>';
+                        html += '<button class="status-pill" onclick="cycleStatus(' + t.id + ');">' + (t.status === 'TODO' ? '○ To Do' : t.status === 'IN_PROGRESS' ? '→ In Progress' : '✓ Complete') + '</button>';
+                        html += '</div>';
+                        html += '<button class="del-btn" onclick="showDelBar(\'' + t.id + '\')" style="border:none; background:none; cursor:pointer; font-size:16px;">⋯</button>';
+                        html += '</div>';
+                        html += '<div class="del-bar" id="delbar-' + t.id + '" style="display:none; margin:8px -11px -9px;"><div class="del-bar-btns"><button class="del-no" onclick="hideDelBar(\'' + t.id + '\')">Cancel</button><button class="del-yes" onclick="delTask(' + t.id + '); render();">Delete</button></div></div>';
+                        html += '</div>';
+                        container.innerHTML += html;
+               });
+        }
 
-// ── Drag — from calendar event ────────────────────────────────────────────────
-function onEventDragStart(e,id){
-  dragId=id; dragSource='calendar';
-  e.dataTransfer.effectAllowed='move';
-  e.stopPropagation();
-  showGhost(e, getTask(id).title);
-  setTimeout(function(){
-    var ev=document.getElementById('event-'+id);
-    if(ev) ev.classList.add('is-dragging');
-  },0);
-}
+        function showDelBar(id) { document.getElementById('delbar-' + id).style.display = 'block'; }
+        function hideDelBar(id) { document.getElementById('delbar-' + id).style.display = 'none'; }
 
-function onDragEnd(){
-  hideGhost();
-  // Remove dragging class from everything
-  document.querySelectorAll('.is-dragging').forEach(function(el){el.classList.remove('is-dragging');});
-  document.querySelectorAll('.over').forEach(function(el){el.classList.remove('over');});
-  document.getElementById('unscheduledZone').classList.remove('drag-over-zone');
-  dragId=null; dragSource=null;
-}
+        // ===== All Tasks View =====
+        function renderAllTasks() {
+               const container = document.getElementById('unscheduledList');
+               container.innerHTML = '';
 
-// ── Drop onto calendar slot ───────────────────────────────────────────────────
-function onSlotDragOver(e){
-  e.preventDefault();
-  e.currentTarget.classList.add('over');
-}
-function onSlotDragLeave(e){
-  e.currentTarget.classList.remove('over');
-}
-function onSlotDrop(e,iso){
-  e.preventDefault();
-  e.currentTarget.classList.remove('over');
-  if(!dragId) return;
-  var t=getTask(dragId);
-  if(t){ t.sched=new Date(iso); render(); }
-}
+               if (tasks.length === 0) {
+                        container.innerHTML = '<div style="text-align: center; color: #ccc; padding: 20px; font-size: 12px;">No tasks here!<br>Add one below ↓</div>';
+                        return;
+               }
 
-// ── Drop onto unscheduled zone (removes from calendar) ───────────────────────
-function onZoneDragOver(e){
-  e.preventDefault();
-  // Only highlight if the task is currently scheduled
-  var t=dragId?getTask(dragId):null;
-  if(t && t.sched){
-    document.getElementById('unscheduledZone').classList.add('drag-over-zone');
-  }
-}
-function onZoneDragLeave(e){
-  // Only clear if leaving the whole zone (not a child)
-  var zone=document.getElementById('unscheduledZone');
-  if(!zone.contains(e.relatedTarget)){
-    zone.classList.remove('drag-over-zone');
-  }
-}
-function onZoneDrop(e){
-  e.preventDefault();
-  document.getElementById('unscheduledZone').classList.remove('drag-over-zone');
-  if(!dragId) return;
-  var t=getTask(dragId);
-  if(t && t.sched){
-    t.sched=null;
-    render();
-  }
-}
+               tasks.forEach(t => {
+                        let html = '<div class="task-card">';
+                        html += '<div class="card-top">';
+                        html += '<div class="task-info">';
+                        html += '<div class="task-name' + (t.status === 'COMPLETE' ? ' struck' : '') + '">' + t.title + '</div>';
+                        if (t.sched) html += '<div class="task-info" style="font-size: 10px; color: #999; margin-top: 4px;">' + fmtDate(new Date(t.sched)) + ' ' + fmtTime(new Date(t.sched)) + '</div>';
+                        html += '<button class="status-pill" onclick="cycleStatus(' + t.id + ');">' + (t.status === 'TODO' ? '○ To Do' : t.status === 'IN_PROGRESS' ? '→ In Progress' : '✓ Complete') + '</button>';
+                        html += '</div>';
+                        html += '<button class="del-btn" onclick="showDelBar(\'' + t.id + '\')" style="border:none; background:none; cursor:pointer; font-size:16px;">⋯</button>';
+                        html += '</div>';
+                        html += '<div class="del-bar" id="delbar-' + t.id + '" style="display:none; margin:8px -11px -9px;"><div class="del-bar-btns"><button class="del-no" onclick="hideDelBar(\'' + t.id + '\')">Cancel</button><button class="del-yes" onclick="delTask(' + t.id + '); render();">Delete</button></div></div>';
+                        html += '</div>';
+                        container.innerHTML += html;
+               });
+        }
 
-// ── Ghost label ───────────────────────────────────────────────────────────────
-function showGhost(e, label){
-  var g=document.getElementById('drag-ghost');
-  g.textContent='↕ '+label;
-  g.style.display='block';
-  moveGhost(e);
-}
-function moveGhost(e){
-  var g=document.getElementById('drag-ghost');
-  g.style.left=(e.clientX+14)+'px';
-  g.style.top=(e.clientY-10)+'px';
-}
-function hideGhost(){
-  document.getElementById('drag-ghost').style.display='none';
-}
-document.addEventListener('dragover',function(e){ moveGhost(e); });
+        // ===== Main Render =====
+        function render() {
+               if (view === 'calendar') {
+                        document.querySelector('.cal').style.display = 'flex';
+                        document.querySelector('.cal').style.flexDirection = 'column';
+                        document.querySelector('.sidebar .list-header').textContent = 'UNSCHEDULED';
+                        renderUnscheduled();
+                        renderCal();
+               } else if (view === 'allTasks') {
+                        document.querySelector('.sidebar .list-header').textContent = 'ALL TASKS';
+                        renderAllTasks();
+                        document.querySelector('.cal').style.display = 'none';
+               } else {
+                        document.querySelector('.sidebar .list-header').textContent = 'TODAY';
+                        document.querySelector('.cal').style.display = 'none';
+               }
+        }
 
-// ── CRUD ──────────────────────────────────────────────────────────────────────
-function showDelBar(id){ var b=document.getElementById('delbar-'+id); if(b) b.classList.add('visible'); }
-function hideDelBar(id){ var b=document.getElementById('delbar-'+id); if(b) b.classList.remove('visible'); }
-function doDelete(id){ tasks=tasks.filter(function(t){return t.id!==id;}); render(); }
-
-function setView(v,btn){
-  view=v;
-  document.querySelectorAll('.nav button').forEach(function(b){b.classList.remove('active');});
-  btn.classList.add('active');
-  render();
-}
-function prevWeek(){ weekStart=addDays(weekStart,-7); renderCal(); }
-function nextWeek(){ weekStart=addDays(weekStart,7); renderCal(); }
-
-// ── Modal ─────────────────────────────────────────────────────────────────────
-function openModal(id){
-  editId=id||null;
-  var t=id?getTask(id):null;
-  document.getElementById('modalTitle').textContent=t?'Edit Task':'New Task';
-  document.getElementById('fTitle').value=t?t.title:'';
-  document.getElementById('fDesc').value=t?t.desc:'';
-  document.getElementById('fDur').value=t?t.dur:30;
-  document.getElementById('fStatus').value=t?t.status:'TODO';
-  if(t&&t.sched){
-    var d=new Date(t.sched);
-    document.getElementById('fSched').value=new Date(d-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
-  } else { document.getElementById('fSched').value=''; }
-  document.getElementById('overlay').classList.add('open');
-  setTimeout(function(){document.getElementById('fTitle').focus();},50);
-}
-function closeModal(){ document.getElementById('overlay').classList.remove('open'); editId=null; }
-function saveTask(){
-  var title=document.getElementById('fTitle').value.trim();
-  if(!title){document.getElementById('fTitle').focus();return;}
-  var sv=document.getElementById('fSched').value;
-  var data={title:title,desc:document.getElementById('fDesc').value.trim(),dur:parseInt(document.getElementById('fDur').value)||30,status:document.getElementById('fStatus').value,sched:sv?new Date(sv):null};
-  if(editId){
-    var t=getTask(editId); if(t) Object.assign(t,data);
-  } else {
-    tasks.push({id:uid(),pos:tasks.length,title:data.title,desc:data.desc,dur:data.dur,status:data.status,sched:data.sched});
-  }
-  closeModal(); render();
-}
-
-// ── AI ────────────────────────────────────────────────────────────────────────
-function runAI(){
-  var unscheduled=tasks.filter(function(t){return !t.sched&&t.status!=='COMPLETE';});
-  if(!unscheduled.length){document.getElementById('aiMsg').textContent='No unscheduled tasks!';return;}
-  document.getElementById('aiMsg').textContent='Thinking...';
-  setTimeout(function(){
-    var now=new Date(),cursor=new Date();
-    cursor.setHours(Math.max(9,now.getHours()+1),0,0,0);
-    var end=new Date(); end.setHours(18,0,0,0);
-    var count=0;
-    for(var i=0;i<unscheduled.length;i++){
-      if(cursor>=end) break;
-      unscheduled[i].sched=new Date(cursor);
-      cursor=addMins(cursor,unscheduled[i].dur+15);
-      count++;
-    }
-    weekStart=getWeekStart(new Date());
-    render();
-    document.getElementById('aiMsg').textContent='✓ Scheduled '+count+' task'+(count!==1?'s':'')+'!';
-    setTimeout(function(){document.getElementById('aiMsg').textContent='';},3000);
-  },1000);
-}
-
-document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
-render();
-</script>
-</body>
-</html>
+        // ===== Init =====
+        window.addEventListener('DOMContentLoaded', () => {
+               loadTasks();
+               render();
+        });
+   </script>
+ </body>
+</html>html>
+   </script></label></label>
+ </body>
+   </style></title>
+ </head>
