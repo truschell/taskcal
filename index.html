@@ -137,90 +137,90 @@
  </head>
  <body>
     <div class="nav">
-         <div class="brand">◆ TaskCal</div>div>
-         <button class="nav-btn" onclick="setView('today')">Today</button>button>
-         <button class="nav-btn" onclick="setView('allTasks')">All Tasks</button>button>
-         <button class="nav-btn" onclick="setView('calendar')">Calendar</button>button>
-    </div>div>
+         <div class="brand">◆ TaskCal</div>
+         <button class="nav-btn" onclick="setView('today')">Today</button>
+         <button class="nav-btn" onclick="setView('allTasks')">All Tasks</button>
+         <button class="nav-btn" onclick="setView('calendar')">Calendar</button>
+    </div>
 
     <div class="layout">
          <div class="sidebar">
                 <div class="ai-box">
                          <label>+ AI Scheduler</label>
                         <input type="text" id="aiInput" placeholder="e.g. Do quick tasks first...">
-                        <button onclick="scheduleMyDay()">Schedule my day</button>button>
-                </div>div>
+                        <button onclick="scheduleMyDay()">Schedule my day</button>
+                </div>
          
-               <div class="list-header">UNSCHEDULED <span class="list-header-hint">drop here to unschedule</span>span></div>div>
-               <div class="task-list" id="unscheduledList"></div>div>
+               <div class="list-header">UNSCHEDULED <span class="list-header-hint">drop here to unschedule</span></div>
+               <div class="task-list" id="unscheduledList"></div>
          
-               <button class="add-btn" onclick="openModal()">+ New task</button>button>
-         </div>div>
+               <button class="add-btn" onclick="openModal()">+ New task</button>
+         </div>
     
         <!-- Modal -->
         <div class="modal" id="overlay" onclick="if(event.target===this)closeModal()">
               <div class="modal-content">
                       <div class="modal-head">
-                                <h2 id="modalTitle">New Task</h2>h2>
-                                <button onclick="closeModal()">×</button>button>
-                      </div>div>
+                                <h2 id="modalTitle">New Task</h2>
+                                <button onclick="closeModal()">×</button>
+                      </div>
                       <div class="modal-body">
-                                <div class="field"><label>Title *</label><input id="fTitle" placeholder="What needs to be done?" /></div>div>
-                                <div class="field"><label>Description</label><textarea id="fDesc" rows="2" placeholder="Optional notes..."></textarea></div>div>
+                                <div class="field"><label>Title *</label><input id="fTitle" placeholder="What needs to be done?" /></div>
+                                <div class="field"><label>Description</label><textarea id="fDesc" rows="2" placeholder="Optional notes..."></textarea></div>
                                 <div class="field-row">
-                                            <div class="field"><label>Duration (min)</label><input id="fDur" type="number" value="30" min="5" step="5" /></div>div>
+                                            <div class="field"><label>Duration (min)</label><input id="fDur" type="number" value="30" min="5" step="5" /></div>
                                             <div class="field"><label>Status</label>
                                                           <select id="fStatus">
-                                                                          <option value="TODO">To Do</option>option>
-                                                                          <option value="IN_PROGRESS">In Progress</option>option>
-                                                                          <option value="COMPLETE">Complete</option>option>
-                                                          </select>select>
-                                            </div>div>
-                                </div>div>
-                                <div class="field"><label>Schedule (optional)</label><input id="fSched" type="datetime-local" /></div>div>
-                      </div>div>
+                                                                          <option value="TODO">To Do</option>
+                                                                          <option value="IN_PROGRESS">In Progress</option>
+                                                                          <option value="COMPLETE">Complete</option>
+                                                          </select>
+                                            </div>
+                                </div>
+                                <div class="field"><label>Schedule (optional)</label><input id="fSched" type="datetime-local" /></div>
+                      </div>
                       <div class="modal-foot">
-                                <button class="btn-cancel" onclick="closeModal()">Cancel</button>button>
-                                <button class="btn-save" onclick="saveTask()">Save</button>button>
-                      </div>div>
-              </div>div>
-        </div>div>
+                                <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+                                <button class="btn-save" onclick="saveTask()">Save</button>
+                      </div>
+              </div>
+        </div>
     
         <!-- Calendar -->
         <div class="cal">
               <div class="cal-header">
                       <div class="week-nav">
-                                <button onclick="prevWeek()">← Prev</button>button>
-                                <span id="weekTitle">May 4 – May 10</span>span>
-                                <button onclick="nextWeek()">Next →</button>button>
-                      </div>div>
+                                <button onclick="prevWeek()">← Prev</button>
+                                <span id="weekTitle">May 4 – May 10</span>
+                                <button onclick="nextWeek()">Next →</button>
+                      </div>
                       <div class="day-cols">
-                                <div class="time-gutter"></div>div>
-                                <div class="day-col" id="dayTemplate" style="display:none;"></div>div>
-                                <div id="dayColsContainer"></div>div>
-                      </div>div>
-              </div>div>
+                                <div class="time-gutter"></div>
+                                <div class="day-col" id="dayTemplate" style="display:none;"></div>
+                                <div id="dayColsContainer"></div>
+                      </div>
+              </div>
               <div class="cal-body">
                       <div class="time-gutter">
-                                <div class="time-label">7am</div>div>
-                                <div class="time-label">8am</div>div>
-                                <div class="time-label">9am</div>div>
-                                <div class="time-label">10am</div>div>
-                                <div class="time-label">11am</div>div>
-                                <div class="time-label">12pm</div>div>
-                                <div class="time-label">1pm</div>div>
-                                <div class="time-label">2pm</div>div>
-                                <div class="time-label">3pm</div>div>
-                                <div class="time-label">4pm</div>div>
-                                <div class="time-label">5pm</div>div>
-                                <div class="time-label">6pm</div>div>
-                                <div class="time-label">7pm</div>div>
-                                <div class="time-label">8pm</div>div>
-                      </div>div>
-                      <div class="day-cols" id="daysWrap"></div>div>
-              </div>div>
-        </div>div>
-    </div>div>
+                                <div class="time-label">7am</div>
+                                <div class="time-label">8am</div>
+                                <div class="time-label">9am</div>
+                                <div class="time-label">10am</div>
+                                <div class="time-label">11am</div>
+                                <div class="time-label">12pm</div>
+                                <div class="time-label">1pm</div>
+                                <div class="time-label">2pm</div>
+                                <div class="time-label">3pm</div>
+                                <div class="time-label">4pm</div>
+                                <div class="time-label">5pm</div>
+                                <div class="time-label">6pm</div>
+                                <div class="time-label">7pm</div>
+                                <div class="time-label">8pm</div>
+                      </div>
+                      <div class="day-cols" id="daysWrap"></div>
+              </div>
+        </div>
+    </div>
  
    <script>
         // ===== localStorage Functions =====
@@ -433,7 +433,7 @@
         });
    </script>
  </body>
-</html>html>
+</html>
    </script></label></label>
  </body>
    </style></title>
