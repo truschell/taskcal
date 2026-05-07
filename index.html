@@ -8,6 +8,11 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: sans-serif; background: #f5f5f5; color: #1a1a1a; font-size: 14px; user-select: none; }
 
+        /* skip link & screen-reader */
+        .skip-link { position: absolute; left: -999px; top: auto; width: 1px; height: 1px; overflow: hidden; }
+        .skip-link:focus { left: 8px; top: 8px; width: auto; height: auto; background: white; padding: 6px 8px; border-radius: 4px; z-index: 100; }
+        .sr-only { position: absolute !important; height: 1px; width: 1px; overflow: hidden; clip: rect(1px, 1px, 1px, 1px); white-space: nowrap; }
+
         .nav { background: white; border-bottom: 1px solid #e0e0e0; padding: 10px 16px; display: flex; align-items: center; }
         .brand { font-weight: 700; font-size: 15px; margin-right: 12px; }
         .nav button { padding: 5px 14px; border-radius: 6px; border: none; background: transparent; cursor: pointer; font-size: 13px; }
@@ -118,40 +123,44 @@
       </style>
  </head>
  <body>
-    <div class="nav">
+    <a href="#main" class="skip-link">Skip to main content</a>
+    <div id="announcer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
+
+    <div class="nav" role="navigation" aria-label="Main navigation">
          <div class="brand">◆ TaskCal</div>
-         <button class="nav-btn" onclick="setView('today')">Today</button>
-         <button class="nav-btn" onclick="setView('allTasks')">All Tasks</button>
-         <button class="nav-btn" onclick="setView('calendar')">Calendar</button>
+         <button class="nav-btn" data-view="today" aria-pressed="false" onclick="setView('today', this)">Today</button>
+         <button class="nav-btn" data-view="allTasks" aria-pressed="false" onclick="setView('allTasks', this)">All Tasks</button>
+         <button class="nav-btn active" data-view="calendar" aria-pressed="true" onclick="setView('calendar', this)">Calendar</button>
     </div>
 
+    <main id="main">
     <div class="layout">
-         <div class="sidebar">
+         <div class="sidebar" aria-label="Sidebar">
                 <div class="ai-box">
-                         <label>+ AI Scheduler</label>
+                         <label for="aiInput">+ AI Scheduler</label>
                         <input type="text" id="aiInput" placeholder="e.g. Do quick tasks first...">
                         <button onclick="scheduleMyDay()">Schedule my day</button>
                 </div>
          
-               <div class="list-header">UNSCHEDULED <span class="list-header-hint">drop here to unschedule</span></div>
-               <div class="task-list" id="unscheduledList"></div>
+               <div class="list-header" id="listHeader">UNSCHEDULED <span class="list-header-hint">drop here to unschedule</span></div>
+               <div class="task-list" id="unscheduledList" aria-live="polite"></div>
          
                <button class="add-btn" onclick="openModal()">+ New task</button>
          </div>
     
         <!-- Modal -->
-        <div class="modal" id="overlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal" id="overlay" role="dialog" aria-modal="true" aria-labelledby="modalTitle" onclick="if(event.target===this)closeModal()">
               <div class="modal-content">
                       <div class="modal-head">
                                 <h2 id="modalTitle">New Task</h2>
-                                <button onclick="closeModal()">×</button>
+                                <button onclick="closeModal()" aria-label="Close dialog">×</button>
                       </div>
                       <div class="modal-body">
-                                <div class="field"><label>Title *</label><input id="fTitle" placeholder="What needs to be done?" onkeydown="if(event.key==='Enter')saveTask()" /></div>
-                                <div class="field"><label>Description</label><textarea id="fDesc" rows="2" placeholder="Optional notes..."></textarea></div>
+                                <div class="field"><label for="fTitle">Title *</label><input id="fTitle" placeholder="What needs to be done?" onkeydown="if(event.key==='Enter')saveTask()" /></div>
+                                <div class="field"><label for="fDesc">Description</label><textarea id="fDesc" rows="2" placeholder="Optional notes..."></textarea></div>
                                 <div class="field-row">
-                                            <div class="field"><label>Duration (min)</label><input id="fDur" type="number" value="30" min="5" step="5" /></div>
-                                            <div class="field"><label>Status</label>
+                                            <div class="field"><label for="fDur">Duration (min)</label><input id="fDur" type="number" value="30" min="5" step="5" /></div>
+                                            <div class="field"><label for="fStatus">Status</label>
                                                           <select id="fStatus">
                                                                           <option value="TODO">To Do</option>
                                                                           <option value="IN_PROGRESS">In Progress</option>
@@ -159,7 +168,7 @@
                                                           </select>
                                             </div>
                                 </div>
-                                <div class="field"><label>Schedule (optional)</label><input id="fSched" type="datetime-local" /></div>
+                                <div class="field"><label for="fSched">Schedule (optional)</label><input id="fSched" type="datetime-local" /></div>
                       </div>
                       <div class="modal-foot">
                                 <button class="btn-cancel" onclick="closeModal()">Cancel</button>
@@ -169,21 +178,21 @@
         </div>
     
         <!-- Calendar -->
-        <div class="cal">
+        <div class="cal" aria-label="Calendar">
               <div class="cal-header">
                       <div class="week-nav">
-                                <button onclick="prevWeek()">← Prev</button>
+                                <button onclick="prevWeek()" aria-label="Previous week">← Prev</button>
                                 <span id="weekTitle">May 4 – May 10</span>
-                                <button onclick="nextWeek()">Next →</button>
+                                <button onclick="nextWeek()" aria-label="Next week">Next →</button>
                       </div>
                       <div class="day-cols">
-                                <div class="time-gutter"></div>
+                                <div class="time-gutter" aria-hidden="true"></div>
                                 <div class="day-col" id="dayTemplate" style="display:none;"></div>
                                 <div id="dayColsContainer"></div>
                       </div>
               </div>
               <div class="cal-body">
-                      <div class="time-gutter">
+                      <div class="time-gutter" aria-hidden="true">
                                 <div class="time-label">7am</div>
                                 <div class="time-label">8am</div>
                                 <div class="time-label">9am</div>
@@ -199,12 +208,29 @@
                                 <div class="time-label">7pm</div>
                                 <div class="time-label">8pm</div>
                       </div>
-                      <div class="day-cols" id="daysWrap"></div>
+                      <div class="day-cols" id="daysWrap" role="grid"></div>
               </div>
         </div>
     </div>
+    </main>
  
    <script>
+        // ===== Accessibility helpers =====
+        function announce(msg) { const a = document.getElementById('announcer'); if (a) { a.textContent = msg; } }
+
+        let previousActiveElement = null;
+        function trapFocusInModal(e) {
+            if (e.key !== 'Tab') return;
+            const modal = document.querySelector('.modal.open .modal-content');
+            if (!modal) return;
+            const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+            if (!focusable.length) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+            else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+        }
+
         // ===== localStorage Functions =====
         function saveTasks() {
                try { localStorage.setItem('taskcal_tasks', JSON.stringify(tasks)); } catch(e) { console.warn('TaskCal: could not save', e); }
@@ -228,14 +254,15 @@
         function fmtDate(d) { return d.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'}); }
         function fmtTime(d) { return d.toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit', hour12:true}).toLowerCase(); }
         function getTask(id) { return tasks.find(t => t.id === id) || null; }
-        function delTask(id) { tasks = tasks.filter(t => t.id !== id); saveTasks(); render(); }
+        function delTask(id) { const t = getTask(id); tasks = tasks.filter(t2 => t2.id !== id); saveTasks(); announce('Deleted task: ' + (t?.title || '')); render(); }
 
         // ===== Views =====
-        function setView(v) { view = v; document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active')); event.target.classList.add('active'); render(); }
+        function setView(v, btnEl) { view = v; document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-pressed', 'false'); }); if (btnEl) { btnEl.classList.add('active'); btnEl.setAttribute('aria-pressed', 'true'); btnEl.focus(); } render(); }
 
         // ===== Modal =====
         function openModal(id) {
                editId = id;
+               previousActiveElement = document.activeElement;
                const t = id ? getTask(id) : null;
                document.getElementById('modalTitle').textContent = t ? 'Edit Task' : 'New Task';
                document.getElementById('fTitle').value = t?.title || '';
@@ -247,12 +274,15 @@
                         document.getElementById('fSched').value = d.toISOString().slice(0, 16);
                } else document.getElementById('fSched').value = '';
                document.getElementById('overlay').classList.add('open');
+               document.addEventListener('keydown', trapFocusInModal);
                setTimeout(() => document.getElementById('fTitle').focus(), 50);
         }
 
         function closeModal() {
                document.getElementById('overlay').classList.remove('open');
                editId = null;
+               document.removeEventListener('keydown', trapFocusInModal);
+               if (previousActiveElement && previousActiveElement.focus) previousActiveElement.focus();
         }
 
         function saveTask() {
@@ -271,6 +301,7 @@
                         tasks.push({ id: Date.now(), title, desc, dur, status, sched });
                }
                saveTasks();
+               announce('Saved task: ' + title);
                closeModal();
                render();
         }
@@ -298,15 +329,16 @@
                                    const slotTime = new Date(d);
                                    slotTime.setHours(h, 0, 0, 0);
                                    const slotKey = slotTime.toISOString();
+                                   const slotLabel = slotTime.toLocaleString('en-US', {weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit', hour12:true});
 
-                                   html += '<div class="slot" ondragover="onSlotDragOver(event)" ondragleave="onSlotDragLeave(event)" ondrop="onSlotDrop(event, \'' + slotKey + '\')" data-slot="' + slotKey + '"></div>';
+                                   html += '<div class="slot" tabindex="0" aria-label="' + slotLabel + '" ondragover="onSlotDragOver(event)" ondragleave="onSlotDragLeave(event)" ondrop="onSlotDrop(event, \'' + slotKey + '\')" data-slot="' + slotKey + '"></div>';
                                    const tasksInSlot = tasks.filter(t => t.sched && new Date(t.sched).toISOString().slice(0, 13) === slotKey.slice(0, 13));
                                    tasksInSlot.forEach(t => {
-            html += '<div class="event ' + t.status + '" draggable="true" ondragstart="onDragStart(event, \'' + t.id + '\')" ondragend="onDragEnd(event)" id="event-' + t.id + '">';
+            html += '<div class="event ' + t.status + '" role="article" aria-label="' + (t.title.replace(/"/g,'\\"')) + '" draggable="true" ondragstart="onDragStart(event, \'" + t.id + "\')" ondragend="onDragEnd(event)" id="event-' + t.id + '">';
                                                 html += '<div class="event-title">' + t.title + '</div>';
                                                 if (t.desc) html += '<div class="event-sub">' + t.desc + '</div>';
                                                 html += '<button class="event-status" onclick="cycleStatus(\'' + t.id + '\')" style="display:inline-block;">' + (t.status === 'COMPLETE' ? '✓' : (t.status === 'IN_PROGRESS' ? '→' : '○')) + '</button>';
-                                                html += '<button onclick="delTask(' + t.id + '); render();" style="position:absolute; top:3px; right:3px; border:none; background:none; cursor:pointer; color:inherit; opacity:0.5; font-size:14px;">×</button>';
+                                                html += '<button onclick="delTask(' + t.id + '); render();" aria-label="Delete ' + (t.title.replace(/"/g,'\\"')) + '" style="position:absolute; top:3px; right:3px; border:none; background:none; cursor:pointer; color:inherit; opacity:0.5; font-size:14px;">×</button>';
                                                 html += '</div>';
                                    });
                                    html += '</div>';
@@ -331,12 +363,15 @@
                e.preventDefault();
                const taskId = parseInt(e.dataTransfer.getData('taskId'));
                const t = getTask(taskId);
-               if (t) { t.sched = new Date(slotKey); saveTasks(); render(); }
+               if (t) { t.sched = new Date(slotKey); saveTasks(); announce('Scheduled ' + t.title + ' at ' + new Date(slotKey).toLocaleString()); render(); }
         }
 
         // ===== Task Management =====
-        function scheduleMyDay() { const v = document.getElementById('aiInput').value.trim(); if (v) { openModal(); document.getElementById('fTitle').value = v; document.getElementById('aiInput').value = ''; } }
-        function cycleStatus(id) { const t = getTask(id); if (t) { t.status = t.status === 'TODO' ? 'IN_PROGRESS' : t.status === 'IN_PROGRESS' ? 'COMPLETE' : 'TODO'; saveTasks(); render(); } }
+        function scheduleMyDay() { const v = document.getElementById('aiInput').value.trim(); if (v) { openModal(); document.getElementById('fTitle').value = v; document.getElementById('aiInput').value = ''; announce('Prepared task: ' + v); } }
+        function cycleStatus(id) { const t = getTask(id); if (t) { t.status = t.status === 'TODO' ? 'IN_PROGRESS' : t.status === 'IN_PROGRESS' ? 'COMPLETE' : 'TODO'; saveTasks(); announce('Status updated: ' + t.title + ' → ' + t.status); render(); } }
+
+        // keyboard handlers for task cards
+        function onTaskKeyDown(e, id) { if (e.key === 'Enter') { openModal(id); } else if (e.key === ' ') { e.preventDefault(); cycleStatus(id); } }
 
         // ===== Unscheduled Tasks =====
         function renderUnscheduled() {
@@ -350,13 +385,14 @@
                }
 
                unsch.forEach(t => {
-                        let html = '<div class="task-card" draggable="true" ondragstart="onDragStart(event, ' + t.id + ')" ondragend="onDragEnd(event)" id="task-' + t.id + '">';
+                        const safeTitle = (t.title + '').replace(/"/g,'\\"');
+                        let html = '<div class="task-card" role="article" tabindex="0" onkeydown="onTaskKeyDown(event, \'" + t.id + "\')" aria-label="Task: ' + safeTitle + ', status: ' + t.status + '" draggable="true" ondragstart="onDragStart(event, ' + t.id + ')" ondragend="onDragEnd(event)" id="task-' + t.id + '">';
                         html += '<div class="card-top">';
                         html += '<div class="task-info">';
                         html += '<div class="task-name' + (t.status === 'COMPLETE' ? ' struck' : '') + '">' + t.title + '</div>';
                         html += '<button class="status-pill" onclick="cycleStatus(' + t.id + ');">' + (t.status === 'TODO' ? '○ To Do' : t.status === 'IN_PROGRESS' ? '→ In Progress' : '✓ Complete') + '</button>';
                         html += '</div>';
-                        html += '<button class="del-btn" onclick="showDelBar(\'' + t.id + '\')" style="border:none; background:none; cursor:pointer; font-size:16px;">⋯</button>';
+                        html += '<button class="del-btn" onclick="showDelBar(\'' + t.id + '\')" style="border:none; background:none; cursor:pointer; font-size:16px;" aria-label="More options for ' + safeTitle + '">⋯</button>';
                         html += '</div>';
                         html += '<div class="del-bar" id="delbar-' + t.id + '" style="display:none; margin:8px -11px -9px;"><div class="del-bar-btns"><button class="del-no" onclick="hideDelBar(\'' + t.id + '\')">Cancel</button><button class="del-yes" onclick="delTask(' + t.id + '); hideDelBar(\'' + t.id + '\'); render();">Delete</button></div></div>';
                         html += '</div>';
@@ -364,7 +400,7 @@
                });
         }
 
-        function showDelBar(id) { document.getElementById('delbar-' + id).style.display = 'block'; }
+        function showDelBar(id) { document.getElementById('delbar-' + id).style.display = 'block'; document.getElementById('delbar-' + id).querySelector('button.del-no').focus(); }
         function hideDelBar(id) { document.getElementById('delbar-' + id).style.display = 'none'; }
 
         // ===== All Tasks View =====
@@ -378,14 +414,15 @@
                }
 
                tasks.forEach(t => {
-                        let html = '<div class="task-card">';
+                        const safeTitle = (t.title + '').replace(/"/g,'\\"');
+                        let html = '<div class="task-card" role="article" tabindex="0" onkeydown="onTaskKeyDown(event, \'" + t.id + "\')">';
                         html += '<div class="card-top">';
                         html += '<div class="task-info">';
                         html += '<div class="task-name' + (t.status === 'COMPLETE' ? ' struck' : '') + '">' + t.title + '</div>';
                         if (t.sched) html += '<div class="task-info" style="font-size: 10px; color: #999; margin-top: 4px;">' + fmtDate(new Date(t.sched)) + ' ' + fmtTime(new Date(t.sched)) + '</div>';
                         html += '<button class="status-pill" onclick="cycleStatus(' + t.id + ');">' + (t.status === 'TODO' ? '○ To Do' : t.status === 'IN_PROGRESS' ? '→ In Progress' : '✓ Complete') + '</button>';
                         html += '</div>';
-                        html += '<button class="del-btn" onclick="showDelBar(\'' + t.id + '\')" style="border:none; background:none; cursor:pointer; font-size:16px;">⋯</button>';
+                        html += '<button class="del-btn" onclick="showDelBar(\'' + t.id + '\')" style="border:none; background:none; cursor:pointer; font-size:16px;" aria-label="More options for ' + safeTitle + '">⋯</button>';
                         html += '</div>';
                         html += '<div class="del-bar" id="delbar-' + t.id + '" style="display:none; margin:8px -11px -9px;"><div class="del-bar-btns"><button class="del-no" onclick="hideDelBar(\'' + t.id + '\')">Cancel</button><button class="del-yes" onclick="delTask(' + t.id + '); hideDelBar(\'' + t.id + '\'); render();">Delete</button></div></div>';
                         html += '</div>';
@@ -404,7 +441,7 @@
                 return;
             }
             todayTasks.sort((a,b) => new Date(a.sched) - new Date(b.sched)).forEach(t => {
-                let html = '<div class="task-card">';
+                let html = '<div class="task-card" role="article" tabindex="0" onkeydown="onTaskKeyDown(event, \'" + t.id + "\')">';
                 html += '<div class="card-top">';
                 html += '<div class="task-info">';
                 html += '<div class="task-name' + (t.status === 'COMPLETE' ? ' struck' : '') + '">' + t.title + '</div>';
@@ -422,15 +459,15 @@
                if (view === 'calendar') {
                         document.querySelector('.cal').style.display = 'flex';
                         document.querySelector('.cal').style.flexDirection = 'column';
-                        document.querySelector('.sidebar .list-header').textContent = 'UNSCHEDULED';
+                        document.getElementById('listHeader').textContent = 'UNSCHEDULED';
                         renderUnscheduled();
                         renderCal();
                } else if (view === 'allTasks') {
-                        document.querySelector('.sidebar .list-header').textContent = 'ALL TASKS';
+                        document.getElementById('listHeader').textContent = 'ALL TASKS';
                         renderAllTasks();
                         document.querySelector('.cal').style.display = 'none';
                } else {
-                        document.querySelector('.sidebar .list-header').textContent = 'TODAY';
+                        document.getElementById('listHeader').textContent = 'TODAY';
                         document.querySelector('.cal').style.display = 'none';
                         renderTodayTasks();
                }
